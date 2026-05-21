@@ -1,12 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',           // Ini yang paling penting
-  basePath: '/ultah-sayang',  // Nama repository kamu
+  output: 'export',
+  basePath: '/ultah-sayang',
   assetPrefix: '/ultah-sayang/',
   trailingSlash: true,
   images: {
-    unoptimized: true,        // Penting untuk GitHub Pages
+    unoptimized: true,
   },
+  // Tambahan ini penting
+  distDir: 'out',
 };
 
 export default nextConfig;

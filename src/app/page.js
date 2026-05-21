@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CompleteBirthdayWeb() {
@@ -25,11 +25,10 @@ export default function CompleteBirthdayWeb() {
   const audioRef = useRef(null);
   const timersRef = useRef([]);
 
-  // Stars - Hanya di-generate di client (hindari hydration mismatch)
+  // Stars (Client-side only)
   const [stars, setStars] = useState([]);
 
   useEffect(() => {
-    // Generate stars hanya di client setelah mount
     const generatedStars = Array.from({ length: 60 }).map(() => ({
       width: Math.random() * 2 + 1,
       height: Math.random() * 2 + 1,
@@ -133,7 +132,7 @@ export default function CompleteBirthdayWeb() {
       {/* AUDIO */}
       <audio ref={audioRef} src="/ultah-sayang/about-you.mp3" loop preload="metadata" />
 
-      {/* Background Stars - Client Only */}
+      {/* Background Stars */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         {stars.map((s, i) => (
           <span
@@ -159,21 +158,46 @@ export default function CompleteBirthdayWeb() {
             transition={{ duration: 0.8 }}
             className="fixed inset-0 bg-[#05070b] z-50 flex items-center justify-center p-4"
           >
-            {/* Gate content tetap sama seperti sebelumnya */}
             <div className="bg-[#0c1118] border border-[#7BAE7F]/20 rounded-3xl p-8 w-full max-w-sm space-y-4 shadow-2xl text-center">
               <span className="text-4xl block animate-bounce">🔒</span>
               <h1 className="text-[#7BAE7F] font-bold text-xl tracking-wider uppercase">strictly personal</h1>
               <p className="text-xs text-slate-400">web ini dikunci khusus buat kamu, sayangg</p>
 
               <div className="space-y-3 pt-2">
-                <input type="text" placeholder="nama panggilan kamu..." className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-[#7BAE7F] transition text-slate-200" value={inputName} onChange={(e) => setInputName(e.target.value)} />
-                <input type="text" maxLength={4} placeholder="tanggal lahir (contoh: 2205)" className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs text-center font-mono tracking-widest outline-none focus:border-[#7BAE7F] transition text-slate-200" value={inputDate} onChange={(e) => setInputDate(e.target.value)} />
-                <input type="text" placeholder="minuman favorit kamu? 😜" className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-[#7BAE7F] transition text-slate-200" value={inputMatcha} onChange={(e) => setInputMatcha(e.target.value)} />
+                <input
+                  type="text"
+                  placeholder="nama panggilan kamu..."
+                  className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-[#7BAE7F] transition text-slate-200"
+                  value={inputName}
+                  onChange={(e) => setInputName(e.target.value)}
+                />
+                <input
+                  type="text"
+                  maxLength={4}
+                  placeholder="tanggal lahir (contoh: 2205)"
+                  className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs text-center font-mono tracking-widest outline-none focus:border-[#7BAE7F] transition text-slate-200"
+                  value={inputDate}
+                  onChange={(e) => setInputDate(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="minuman favorit kamu? 😜"
+                  className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-[#7BAE7F] transition text-slate-200"
+                  value={inputMatcha}
+                  onChange={(e) => setInputMatcha(e.target.value)}
+                />
               </div>
 
-              {gateError && <p className="text-rose-400 text-[11px] font-mono leading-relaxed px-1">{gateError}</p>}
+              {gateError && (
+                <p className="text-rose-400 text-[11px] font-mono leading-relaxed px-1">
+                  {gateError}
+                </p>
+              )}
 
-              <button onClick={handleUnlockGate} className="w-full bg-[#7BAE7F] text-slate-950 py-3 rounded-xl text-xs uppercase tracking-widest font-bold hover:bg-green-400 transition-all active:scale-95 shadow-lg shadow-[#7BAE7F]/10">
+              <button
+                onClick={handleUnlockGate}
+                className="w-full bg-[#7BAE7F] text-slate-950 py-3 rounded-xl text-xs uppercase tracking-widest font-bold hover:bg-green-400 transition-all active:scale-95 shadow-lg shadow-[#7BAE7F]/10"
+              >
                 buka kado ✨
               </button>
             </div>
