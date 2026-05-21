@@ -1,65 +1,423 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export default function CompleteBirthdayWeb() {
+  // =========================================================
+  // STATE
+  // =========================================================
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [inputName, setInputName] = useState('');
+  const [inputDate, setInputDate] = useState('');
+  const [inputMatcha, setInputMatcha] = useState('');
+  const [gateError, setGateError] = useState('');
+
+  const [loading, setLoading] = useState(true);
+  const [loadingText, setLoadingText] = useState('initializing memories...');
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Form State
+  const [futureSelf, setFutureSelf] = useState('');
+  const [firstMeet, setFirstMeet] = useState('');
+  const [futureRelationship, setFutureRelationship] = useState('');
+
+  const audioRef = useRef(null);
+  const timersRef = useRef([]);
+
+  // Stars - Hanya di-generate di client (hindari hydration mismatch)
+  const [stars, setStars] = useState([]);
+
+  useEffect(() => {
+    // Generate stars hanya di client setelah mount
+    const generatedStars = Array.from({ length: 60 }).map(() => ({
+      width: Math.random() * 2 + 1,
+      height: Math.random() * 2 + 1,
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      opacity: Math.random() * 0.4,
+      duration: Math.random() * 3 + 2,
+    }));
+    setStars(generatedStars);
+  }, []);
+
+  // =========================================================
+  // EFFECTS
+  // =========================================================
+  useEffect(() => {
+    if (isUnlocked) {
+      const sequence = [
+        { time: 1000, text: 'loading favorite person...' },
+        { time: 2200, text: 'connecting two hearts across 1.550 km...' },
+        { time: 3400, text: '100%' },
+        { time: 4200, text: 'for someone special, born on may 22 💚' },
+      ];
+
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
+
+      sequence.forEach((item) => {
+        const timer = setTimeout(() => setLoadingText(item.text), item.time);
+        timersRef.current.push(timer);
+      });
+
+      const finalTimer = setTimeout(() => setLoading(false), 5500);
+      timersRef.current.push(finalTimer);
+    }
+
+    return () => timersRef.current.forEach(clearTimeout);
+  }, [isUnlocked]);
+
+  // Audio Cleanup
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) audioRef.current.pause();
+    };
+  }, []);
+
+  // =========================================================
+  // FUNCTIONS
+  // =========================================================
+  const handleUnlockGate = () => {
+    if (
+      inputName.trim() === '' ||
+      inputDate !== '2205' ||
+      inputMatcha.trim().toLowerCase() !== 'matcha'
+    ) {
+      setGateError('aww, akses ditolak! coba cek nama, tanggal lahir, atau minuman favorit kamu lagi ya, sayangg 🤨');
+      return;
+    }
+
+    setGateError('');
+    setIsUnlocked(true);
+  };
+
+  const toggleMusic = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    try {
+      if (isPlaying) {
+        audio.pause();
+      } else {
+        await audio.play();
+      }
+      setIsPlaying(!isPlaying);
+    } catch (err) {
+      console.log("Audio play blocked:", err);
+    }
+  };
+
+  const handleSendLiveWish = () => {
+    const message = `💚 JAWABAN DARI SAYANGG 💚\n\n` +
+      `1. Di umur baru ini, kamu pengen jadi versi diri yang kayak gimana?\n` +
+      `👉 ${futureSelf || '-'}\n\n` +
+      `2. Kalau nanti kita akhirnya ketemu, hal pertama yang pengen kita lakuin apa?\n` +
+      `👉 ${firstMeet || '-'}\n\n` +
+      `3. Menurut kamu, hubungan kita bakal kayak apa beberapa tahun lagi?\n` +
+      `👉 ${futureRelationship || '-'}`;
+
+    const encoded = encodeURIComponent(message);
+    window.open(`https://wa.me/628577315870?text=${encoded}`, '_blank');
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="bg-[#05070b] text-white min-h-screen overflow-x-hidden relative font-sans selection:bg-[#7BAE7F]/20">
+
+      <style jsx global>{`
+        html { scroll-behavior: smooth; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      {/* AUDIO */}
+      <audio ref={audioRef} src="/about-you.mp3" loop preload="metadata" />
+
+      {/* Background Stars - Client Only */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        {stars.map((s, i) => (
+          <span
+            key={i}
+            className="absolute bg-white rounded-full animate-pulse"
+            style={{
+              width: `${s.width}px`,
+              height: `${s.height}px`,
+              top: `${s.top}%`,
+              left: `${s.left}%`,
+              opacity: s.opacity,
+              animationDuration: `${s.duration}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* GATE SECTION */}
+      <AnimatePresence>
+        {!isUnlocked && (
+          <motion.div
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.8 }}
+            className="fixed inset-0 bg-[#05070b] z-50 flex items-center justify-center p-4"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {/* Gate content tetap sama seperti sebelumnya */}
+            <div className="bg-[#0c1118] border border-[#7BAE7F]/20 rounded-3xl p-8 w-full max-w-sm space-y-4 shadow-2xl text-center">
+              <span className="text-4xl block animate-bounce">🔒</span>
+              <h1 className="text-[#7BAE7F] font-bold text-xl tracking-wider uppercase">strictly personal</h1>
+              <p className="text-xs text-slate-400">web ini dikunci khusus buat kamu, sayangg</p>
+
+              <div className="space-y-3 pt-2">
+                <input type="text" placeholder="nama panggilan kamu..." className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-[#7BAE7F] transition text-slate-200" value={inputName} onChange={(e) => setInputName(e.target.value)} />
+                <input type="text" maxLength={4} placeholder="tanggal lahir (contoh: 2205)" className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs text-center font-mono tracking-widest outline-none focus:border-[#7BAE7F] transition text-slate-200" value={inputDate} onChange={(e) => setInputDate(e.target.value)} />
+                <input type="text" placeholder="minuman favorit kamu? 😜" className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-[#7BAE7F] transition text-slate-200" value={inputMatcha} onChange={(e) => setInputMatcha(e.target.value)} />
+              </div>
+
+              {gateError && <p className="text-rose-400 text-[11px] font-mono leading-relaxed px-1">{gateError}</p>}
+
+              <button onClick={handleUnlockGate} className="w-full bg-[#7BAE7F] text-slate-950 py-3 rounded-xl text-xs uppercase tracking-widest font-bold hover:bg-green-400 transition-all active:scale-95 shadow-lg shadow-[#7BAE7F]/10">
+                buka kado ✨
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* LOADING SECTION */}
+      <AnimatePresence>
+        {isUnlocked && loading && (
+          <motion.div
+            exit={{ opacity: 0, filter: 'blur(10px)' }}
+            transition={{ duration: 1 }}
+            className="fixed inset-0 z-40 bg-[#05070b] flex items-center justify-center p-4"
           >
-            Documentation
-          </a>
+            <div className="absolute w-[250px] h-[250px] bg-[#7BAE7F] rounded-full filter blur-[100px] opacity-10 animate-pulse pointer-events-none" />
+            <motion.p
+              key={loadingText}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="text-xs uppercase tracking-[0.3em] text-slate-300 font-mono text-center leading-relaxed"
+            >
+              {loadingText}
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MAIN CONTENT */}
+      {isUnlocked && !loading && (
+        <div className="relative z-10 max-w-xl mx-auto px-4 pb-24 space-y-24">
+          {/* ... Semua section kamu (Opening, Map, Photobooth, dll) tetap sama ... */}
+
+          {/* Opening Section */}
+          <section className="min-h-screen flex flex-col justify-center items-center text-center space-y-6 pt-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.2 }}
+              className="space-y-6"
+            >
+              <h3 className="text-xs tracking-[0.4em] uppercase text-[#7BAE7F]/70 font-mono">
+                03 october 2025
+              </h3>
+              <h1 className="text-2xl md:text-4xl italic font-serif text-white leading-relaxed px-2">
+                the day i met someone<br />
+                through a random telegram chat...
+              </h1>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">
+                and somehow, she became my favorite person.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, duration: 1 }}
+              className="w-full shadow-2xl rounded-2xl overflow-hidden border border-white/5 bg-slate-900/40"
+            >
+              <img src="/photo1.jpeg" alt="Opening Moments" className="w-full h-auto object-cover" loading="lazy" />
+            </motion.div>
+
+            <span className="text-[10px] uppercase tracking-widest text-slate-500 animate-bounce pt-4 block">
+              scroll slowly ↓
+            </span>
+          </section>
+
+          {/* LDR Map */}
+          <section className="space-y-4 pt-12">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl italic font-serif tracking-wide text-slate-200">
+                distance means nothing
+              </h2>
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#7BAE7F]">
+                bekasi ↔ sanggau (1.550 km)
+              </p>
+            </div>
+            <div className="w-full shadow-2xl rounded-2xl overflow-hidden border border-white/5 bg-slate-900/40">
+              <img src="/Map.png" alt="LDR Map" className="w-full h-auto object-cover" loading="lazy" />
+            </div>
+          </section>
+
+          {/* Photobooth */}
+          <section className="space-y-4 pt-12">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl italic font-serif text-slate-200">
+                photobooth memories
+              </h2>
+              <p className="text-[9px] uppercase tracking-[0.3em] text-slate-500">
+                pieces of you
+              </p>
+            </div>
+            <div className="w-full shadow-2xl rounded-2xl overflow-hidden border border-white/5 bg-slate-900/40">
+              <img src="/photo.png" alt="Photobooth" className="w-full h-auto object-cover" loading="lazy" />
+            </div>
+          </section>
+
+          {/* Chat Dump */}
+          <section className="space-y-4 pt-12">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl italic font-serif text-slate-200">
+                tiny conversations, huge meanings
+              </h2>
+              <p className="text-[9px] uppercase tracking-[0.3em] text-slate-500">
+                screenshots i secretly keep
+              </p>
+            </div>
+            <div className="w-full shadow-2xl rounded-2xl overflow-hidden border border-white/5 bg-slate-900/40">
+              <img src="/chat-dumb.png" alt="Chat Dump" className="w-full h-auto object-cover" loading="lazy" />
+            </div>
+          </section>
+
+          {/* Vinyl Music */}
+          <section className="flex flex-col justify-center items-center text-center p-6 bg-slate-900/20 border border-white/5 rounded-3xl space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-sm font-serif italic text-slate-300">
+                every time this song plays,
+              </h2>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">
+                masss always think about you
+              </p>
+            </div>
+
+            <div className="relative flex justify-center items-center py-2">
+              <motion.div
+                animate={{ rotate: isPlaying ? 360 : 0 }}
+                transition={{ repeat: Infinity, duration: 10, ease: 'linear' }}
+                className="w-48 h-48 rounded-full shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden border-4 border-slate-800"
+              >
+                <img src="/vinyl.png" alt="Vinyl" className="w-full h-full object-cover" loading="lazy" />
+              </motion.div>
+
+              {isPlaying && (
+                <motion.div
+                  animate={{ scale: [1, 1.18, 1], opacity: [0.4, 0, 0.4] }}
+                  transition={{ repeat: Infinity, duration: 1.8 }}
+                  className="absolute inset-0 rounded-full border border-[#7BAE7F]/30 pointer-events-none"
+                />
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="uppercase tracking-[0.3em] text-xs font-bold text-slate-200">about you</h3>
+              <p className="text-[9px] uppercase tracking-[0.25em] text-[#7BAE7F]">the 1975</p>
+            </div>
+
+            <button
+              onClick={toggleMusic}
+              className="bg-white text-slate-950 px-8 py-3 rounded-full text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-[#7BAE7F] hover:text-white transition-all shadow-md active:scale-95"
+            >
+              {isPlaying ? 'pause music ⏸' : 'play music ▶'}
+            </button>
+          </section>
+
+          {/* Pesan Section */}
+          <section className="space-y-4 pt-12">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl italic font-serif text-slate-200">
+                a little message for you
+              </h2>
+              <p className="text-[9px] uppercase tracking-[0.3em] text-slate-500">
+                from your favorite telegram boy
+              </p>
+            </div>
+            <div className="w-full shadow-2xl rounded-2xl overflow-hidden border border-white/5 bg-slate-900/40">
+              <img src="/pesan.png" alt="Love Message" className="w-full h-auto object-cover" loading="lazy" />
+            </div>
+          </section>
+
+          {/* Form Section */}
+          <section className="bg-[#0c1118]/90 border border-[#7BAE7F]/10 rounded-3xl p-6 shadow-xl space-y-6 backdrop-blur-md">
+            <div className="text-center space-y-1">
+              <h2 className="text-lg italic font-serif text-slate-200">one more thing...</h2>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-[#7BAE7F]">
+                answer honestly 💚
+              </p>
+            </div>
+
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-xs text-slate-300 block font-medium leading-relaxed">
+                  “di umur baru ini, kamu pengen jadi versi diri yang kayak gimana?”
+                </label>
+                <textarea
+                  rows={3}
+                  value={futureSelf}
+                  placeholder="Tulis di sini ya, sayangg..."
+                  onChange={(e) => setFutureSelf(e.target.value)}
+                  className="w-full bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-[#7BAE7F] resize-none text-slate-200 placeholder:text-slate-600 transition"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs text-slate-300 block font-medium leading-relaxed">
+                  “kalau nanti kita akhirnya ketemu, hal pertama yang pengen kita lakuin apa?”
+                </label>
+                <textarea
+                  rows={3}
+                  value={firstMeet}
+                  placeholder="Pengen jalan bareng atau nge-matcha? 🍵"
+                  onChange={(e) => setFirstMeet(e.target.value)}
+                  className="w-full bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-[#7BAE7F] resize-none text-slate-200 placeholder:text-slate-600 transition"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs text-slate-300 block font-medium leading-relaxed">
+                  “menurut kamu, hubungan kita bakal kayak apa beberapa tahun lagi?”
+                </label>
+                <textarea
+                  rows={3}
+                  value={futureRelationship}
+                  placeholder="Ceritain ekspektasi kamu..."
+                  onChange={(e) => setFutureRelationship(e.target.value)}
+                  className="w-full bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs outline-none focus:border-[#7BAE7F] resize-none text-slate-200 placeholder:text-slate-600 transition"
+                />
+              </div>
+
+              <button
+                onClick={handleSendLiveWish}
+                className="w-full bg-[#7BAE7F] text-slate-950 py-3.5 rounded-xl uppercase tracking-[0.15em] text-xs font-bold hover:bg-green-400 transition-all active:scale-[0.99] shadow-md shadow-[#7BAE7F]/5"
+              >
+                kirim jawaban ke masss 💚
+              </button>
+            </div>
+          </section>
+
+          {/* Ending */}
+          <section className="min-h-[60vh] flex flex-col justify-center items-center text-center space-y-4 px-4">
+            <h1 className="text-3xl md:text-4xl font-black uppercase leading-tight bg-gradient-to-r from-white via-slate-300 to-[#7BAE7F] bg-clip-text text-transparent tracking-wide">
+              happy birthday,<br />
+              my favorite person 💚
+            </h1>
+            <p className="text-xs text-slate-500 max-w-xs leading-relaxed font-mono">
+              and in every universe, masss would still choose you.
+            </p>
+            <span className="text-[10px] font-mono text-[#7BAE7F] tracking-widest uppercase pt-6 block">
+              — from your favorite telegram boy
+            </span>
+          </section>
+
         </div>
-      </main>
+      )}
     </div>
   );
 }
