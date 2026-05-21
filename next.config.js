@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
+  basePath: '/ultah-sayang',
+  assetPrefix: '/ultah-sayang/',
   images: {
     unoptimized: true,
   },
-  basePath: '/ultah-sayang',
-  assetPrefix: '/ultah-sayang/',
 };
 
 module.exports = nextConfig;
